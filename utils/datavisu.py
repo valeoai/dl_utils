@@ -1,15 +1,16 @@
-import keras
+import itertools
+
+# Matplotlib is a plotting library for the Python but
+# it has also some IO functions
+import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import confusion_matrix
-import itertools
-import matplotlib.pyplot as plt # Matplotlib is a plotting library for the Python but it has also some IO functions
 
-def plot_confusion_matrix(y,pred,classes,
-                          normalize=False):
-    
-    title='Confusion matrix'
-    cmap=plt.cm.Blues
-    
+
+def plot_confusion_matrix(y, pred, classes, normalize=False):
+    title = 'Confusion matrix'
+    cmap = plt.cm.Blues
+
     cm = confusion_matrix(y, pred)
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]

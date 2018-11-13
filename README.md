@@ -15,3 +15,8 @@ Uninstall with
 ```
 pip uninstall dl-utils
 ```
+
+Run a pep8 check with 
+```
+pycodestyle . --max-line-length=100
+```
