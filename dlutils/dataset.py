@@ -7,13 +7,10 @@ from PIL import Image
 
 
 def create_subdataset(path):
-    os.mkdir(path / 'subdataset')
-    os.mkdir(path / 'subdataset/train')
-    os.mkdir(path / 'subdataset/train/dogs')
-    os.mkdir(path / 'subdataset/train/cats')
-    os.mkdir(path / 'subdataset/valid')
-    os.mkdir(path / 'subdataset/valid/dogs')
-    os.mkdir(path / 'subdataset/valid/cats')
+    os.makedirs(path / 'subdataset/train/dogs')
+    os.makedirs(path / 'subdataset/train/cats')
+    os.makedirs(path / 'subdataset/valid/dogs')
+    os.makedirs(path / 'subdataset/valid/cats')
 
     input_path = path / 'train/cats'
     output_path = path / 'subdataset/train/cats'
