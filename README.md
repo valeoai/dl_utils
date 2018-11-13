@@ -20,3 +20,12 @@ Run a pep8 check with
 ```
 pycodestyle . --max-line-length=100
 ```
+
+#### How to use:
+```
+from dlutils import GeneratorSingleObject
+from dlutils import SGDRScheduler
+from dlutils import LRFinder
+from dlutils import plot_confusion_matrix
+...
+```

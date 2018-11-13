@@ -14,5 +14,3 @@ def step_decay_schedule(initial_lr=1e-3, decay_factor=0.75, step_size=10):
 
 
 lr_sched = step_decay_schedule(initial_lr=1e-4, decay_factor=0.75, step_size=2)
-
-model.fit(X_train, Y_train, callbacks=[lr_sched])
