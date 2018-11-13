@@ -53,6 +53,7 @@ class SGDRScheduler(Callback):
         self.mult_factor = mult_factor
 
         self.history = {}
+        super().__init__()
 
     def clr(self):
         """Calculate the learning rate."""
@@ -64,7 +65,6 @@ class SGDRScheduler(Callback):
     def on_train_begin(self, logs={}):
         """Initialize the learning rate to the
         minimum value at the start of training."""
-        logs = logs or {}
         K.set_value(self.model.optimizer.lr, self.max_lr)
 
     def on_batch_end(self, batch, logs={}):
