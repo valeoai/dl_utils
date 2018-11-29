@@ -37,8 +37,9 @@ class SGDRScheduler(Callback):
                  max_lr,
                  steps_per_epoch,
                  lr_decay=1,
+                 number_of_cycle = 3,
                  cycle_length=10,
-                 mult_factor=2):
+                 cycle_mult_factor=2):
 
         self.min_lr = min_lr
         self.max_lr = max_lr
@@ -50,9 +51,17 @@ class SGDRScheduler(Callback):
         self.steps_per_epoch = steps_per_epoch
 
         self.cycle_length = cycle_length
-        self.mult_factor = mult_factor
-
+        self.mult_factor = cycle_mult_factor
+        self.nb_epoch = cycle_length
+        prev_cycle_length = cycle_length
+        for i in range(number_of_cycle-1):
+            new_cycle_length = prev_cycle_length * cycle_mult_factor
+            self.nb_epoch += new_cycle_length
+            prev_cycle_length = new_cycle_length
+       
+        self.nb_epoch = int(self.nb_epoch)
         self.history = {}
+
         super().__init__()
 
     def clr(self):
