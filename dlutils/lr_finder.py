@@ -10,37 +10,35 @@ class LRFinder(Callback):
 
     # Usage
         ```python
-            lr_finder = LRFinder(min_lr=1e-5,
-                                 max_lr=1e-2,
-                                 steps_per_epoch=np.ceil(epoch_size/batch_size),
+            lr_finder = LRFinder(min_lr=1e-5, 
+                                 max_lr=1e-2, 
+                                 steps_per_epoch=np.ceil(epoch_size/batch_size), 
                                  epochs=3)
             model.fit(X_train, Y_train, callbacks=[lr_finder])
-
+            
             lr_finder.plot_loss()
         ```
 
     # Arguments
         min_lr: The lower bound of the learning rate range for the experiment.
         max_lr: The upper bound of the learning rate range for the experiment.
-        steps_per_epoch: Number of mini-batches in the dataset.
-            Calculated as `np.ceil(epoch_size/batch_size)`.
-        epochs: Number of epochs to run experiment.
-            Usually between 2 and 4 epochs is sufficient.
-
+        steps_per_epoch: Number of mini-batches in the dataset. Calculated as `np.ceil(epoch_size/batch_size)`. 
+        epochs: Number of epochs to run experiment. Usually between 2 and 4 epochs is sufficient. 
+        
     # References
         Blog post: jeremyjordan.me/nn-learning-rate
         Original paper: https://arxiv.org/abs/1506.01186
     """
 
-    def __init__(self, min_lr=1e-5, max_lr=1e-2, steps_per_epoch=None, epochs=None):
+    def __init__(self, min_lr=1e-5, max_lr=1e-2, steps_per_epoch=None):
         super().__init__()
-
+        
         self.min_lr = min_lr
         self.max_lr = max_lr
-        self.total_iterations = steps_per_epoch * epochs
+        self.total_iterations = steps_per_epoch
         self.iteration = 0
         self.history = {}
-
+        
     def clr(self):
         """"Calculate the learning rate. """
         x = self.iteration / self.total_iterations
