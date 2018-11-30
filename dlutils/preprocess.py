@@ -21,11 +21,13 @@ def unpreprocess(x, data_format,mode):
     if not issubclass(x.dtype.type, np.floating):
         x = x.astype(backend.floatx(), copy=False)
 
+    im = np.copy(x) 
+
     if mode == 'tf':
-        x += 1.
-        x *= 127.5
-        np.clip(x / 225., 0, 1)
-        x = x.astype(int)
+        im += 1.
+        im *= 127.5
+        np.clip(im / 225., 0, 1)
+        im = x.astype(int)
         return x
 
     if mode == 'torch':
@@ -37,46 +39,46 @@ def unpreprocess(x, data_format,mode):
 
     # Zero-center by mean pixel
     if data_format == 'channels_first':
-        if x.ndim == 3:
+        if im.ndim == 3:
             if std is not None:
-                x[0, :, :] *= std[0]
-                x[1, :, :] *= std[1]
-                x[2, :, :] *= std[2]
+                im[0, :, :] *= std[0]
+                im[1, :, :] *= std[1]
+                im[2, :, :] *= std[2]
                 
-            x[0, :, :] += mean[0]
-            x[1, :, :] += mean[1]
-            x[2, :, :] += mean[2]
+            im[0, :, :] += mean[0]
+            im[1, :, :] += mean[1]
+            im[2, :, :] += mean[2]
 
         else:
             if std is not None:
-                x[:, 0, :, :] *= std[0]
-                x[:, 1, :, :] *= std[1]
-                x[:, 2, :, :] *= std[2]
+                im[:, 0, :, :] *= std[0]
+                im[:, 1, :, :] *= std[1]
+                im[:, 2, :, :] *= std[2]
                 
-            x[:, 0, :, :] += mean[0]
-            x[:, 1, :, :] += mean[1]
-            x[:, 2, :, :] += mean[2]
+            im[:, 0, :, :] += mean[0]
+            im[:, 1, :, :] += mean[1]
+            im[:, 2, :, :] += mean[2]
 
     else:
         if std is not None:
-            x[..., 0] *= std[0]
-            x[..., 1] *= std[1]
-            x[..., 2] *= std[2]        
-        x[..., 0] += mean[0]
-        x[..., 1] += mean[1]
-        x[..., 2] += mean[2]
+            im[..., 0] *= std[0]
+            im[..., 1] *= std[1]
+            im[..., 2] *= std[2]        
+        im[..., 0] += mean[0]
+        im[..., 1] += mean[1]
+        im[..., 2] += mean[2]
 
     if mode == 'torch':
-        x *= 255.
+        im *= 255.
     else:
         if data_format == 'channels_first':
             # 'RGB'->'BGR'
-            if x.ndim == 3:
-                x = x[::-1, ...]
+            if im.ndim == 3:
+                im = im[::-1, ...]
             else:
-                x = x[:, ::-1, ...]
+                im = im[:, ::-1, ...]
         else:
             # 'RGB'->'BGR'
-            x = x[..., ::-1]
-            
-    return x
+            im = im[..., ::-1]
+         
+    return im.astype(int) 
