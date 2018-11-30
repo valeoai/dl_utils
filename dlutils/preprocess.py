@@ -27,7 +27,7 @@ def unpreprocess(x, data_format,mode):
         im += 1.
         im *= 127.5
         im = np.clip(im, 0, 255)
-        return im.astype(uint8)
+        return im.astype(np.uint8)
 
     if mode == 'torch':
         mean = [0.485, 0.456, 0.406]
@@ -82,4 +82,4 @@ def unpreprocess(x, data_format,mode):
          
     im = np.clip(im, 0, 255)
 
-    return im.astype(uint8) 
+    return im.astype(np.uint8) 
