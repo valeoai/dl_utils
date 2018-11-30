@@ -99,7 +99,7 @@ class GeneratorSingleObject(keras.utils.Sequence):
             # Read the image
             img = Image.open(self.folder / self.df['filename'][ID])
             bb = self.df['bbox'][ID]
-            bb = np.fromstring(bb, dtype=np.int, sep=' ')
+            #bb = np.fromstring(bb, dtype=np.int, sep=' ')
 
             width, height = img.size
             RatioX = width / self.dim[0]
