@@ -26,9 +26,9 @@ def unpreprocess(x, data_format,mode):
     if mode == 'tf':
         im += 1.
         im *= 127.5
-        np.clip(im / 225., 0, 1)
-        im = x.astype(int)
-        return x
+        im = np.clip(im, 0, 255)
+        im = im.astype(int)
+        return im
 
     if mode == 'torch':
         mean = [0.485, 0.456, 0.406]
@@ -81,4 +81,6 @@ def unpreprocess(x, data_format,mode):
             # 'RGB'->'BGR'
             im = im[..., ::-1]
          
+    im = np.clip(im, 0, 255)
+
     return im.astype(int) 
