@@ -2,6 +2,8 @@ import keras
 import numpy as np
 
 from keras import backend as K
+import tensorflow as tf
+
 
 class SSD_LOSS:
     '''	Loss Class for SSD model.
@@ -18,13 +20,13 @@ class SSD_LOSS:
         self.nb_activation = len(grid_sizes)
         self.nb_class = nbClass
         self.anchors = anchors
-        self.anchor_cnr = K.tf.to_float(self.hw2corners(anchors[:,:2], anchors[:,2:]))
-        self.grid_sizes = K.tf.to_float(grid_sizes)
+        self.anchor_cnr = tf.to_float(self.hw2corners(anchors[:,:2], anchors[:,2:]))
+        self.grid_sizes = tf.to_float(grid_sizes)
     
     def hw2corners(self,ctr, hw): return K.concatenate((ctr-hw/2, ctr+hw/2), axis=1)
 
     def actn_to_bb(self,actn):
-        actn_bbs = K.tf.tanh(actn)
+        actn_bbs = tf.tanh(actn)
         actn_centers = (actn_bbs[:,:2]/2 * self.grid_sizes) + self.anchors[:,:2]
         actn_hw = (actn_bbs[:,2:]/2+1) * self.anchors[:,2:]
         return self.hw2corners(actn_centers, actn_hw)
@@ -40,19 +42,19 @@ class SSD_LOSS:
         return inter[:, :, 0] * inter[:, :, 1]
 
     def jaccard(self,box_a, box_b):
-        box_a = K.cast(box_a,K.tf.float64)
-        box_b = K.cast(box_b,K.tf.float64)
+        box_a = K.cast(box_a,tf.float64)
+        box_b = K.cast(box_b,tf.float64)
         inter = self.intersect(box_a, box_b) 
-        inter = K.cast(inter,K.tf.float64)
-        union = K.cast(K.expand_dims(self.box_sz(box_a),1),K.tf.float64)+ K.cast(K.expand_dims(self.box_sz(box_b),0),K.tf.float64) - inter  
+        inter = K.cast(inter,tf.float64)
+        union = K.cast(K.expand_dims(self.box_sz(box_a),1),tf.float64)+ K.cast(K.expand_dims(self.box_sz(box_b),0),tf.float64) - inter  
 
         return inter/union
 
     def get_y(self,y):
         #y = [class y0 x0 y1 x1]
         diff = y[:,3]-y[:,1]+y[:,4]-y[:,2]
-        idx = K.tf.where(diff>0)
-        return K.tf.gather_nd(y,idx)
+        idx = tf.where(diff>0)
+        return tf.gather_nd(y,idx)
 
     def SSD_1_LOSS(self,yGT, yPred):
         
@@ -86,7 +88,7 @@ class SSD_LOSS:
         prior_overlap = K.max(overlaps,1) # [4] for each GT, value of tye best overlapp
 
         # BBOX Loss
-        ADD = K.tf.one_hot(prior_idx,self.nb_activation)
+        ADD = tf.one_hot(prior_idx,self.nb_activation)
         ADD = K.cast(K.sum(ADD,axis=0),('float64'))
 
         gt_overlap = gt_overlap+ADD
@@ -99,7 +101,7 @@ class SSD_LOSS:
 
         loc_loss = K.abs(a_ic-bbox)     
         loc_loss = K.sum(loc_loss,axis=1)   
-        loc_loss = K.tf.multiply(loc_loss,mask)
+        loc_loss = tf.multiply(loc_loss,mask)
         loc_loss = (K.sum(loc_loss))/K.sum(mask)     
                
 	# Classification Loss
@@ -117,7 +119,7 @@ class SSD_LOSS:
                 
         # then, we estimate BCE for mandatory box (GT)
         pred_mandatory_anchor = K.gather(class_Pred,prior_idx)
-        One_Hot_mandatory = K.tf.one_hot(K.cast(class_GT,'int32'),self.nb_class)
+        One_Hot_mandatory = tf.one_hot(K.cast(class_GT,'int32'),self.nb_class)
         
         target=K.concatenate([One_Hot_Overlap,One_Hot_mandatory],axis=0)
         pred=K.concatenate([class_Pred,pred_mandatory_anchor],axis=0)
@@ -129,12 +131,12 @@ class SSD_LOSS:
     def compute_loss(self,y_true,y_pred):
 
         # convert to tensor:
-        y_true_ts = K.tf.to_float(y_true) # [batch, nb_max_gt 20 , 1+4+1]
-        y_pred_ts = K.tf.to_float(y_pred) # [batch, nb_activation 16 , (20 + 4)]   
+        y_true_ts = tf.to_float(y_true) # [batch, nb_max_gt 20 , 1+4+1]
+        y_pred_ts = tf.to_float(y_pred) # [batch, nb_activation 16 , (20 + 4)]   
 
         elements = (y_true_ts, y_pred_ts)
-        loss = K.tf.map_fn(
-                    lambda x:self.SSD_1_LOSS(x[0],x[1]), elements, dtype=K.tf.float32)
+        loss = tf.map_fn(
+                    lambda x:self.SSD_1_LOSS(x[0],x[1]), elements, dtype=tf.float32)
 
 
         return K.sum(loss)
@@ -154,13 +156,13 @@ class SSD_FOCAL_LOSS:
         self.nb_activation = len(grid_sizes)
         self.nb_class = nbClass
         self.anchors = anchors
-        self.anchor_cnr = K.tf.to_float(self.hw2corners(anchors[:,:2], anchors[:,2:]))        
-        self.grid_sizes = K.tf.to_float(grid_sizes)
+        self.anchor_cnr = tf.to_float(self.hw2corners(anchors[:,:2], anchors[:,2:]))        
+        self.grid_sizes = tf.to_float(grid_sizes)
     
     def hw2corners(self,ctr, hw): return K.concatenate((ctr-hw/2, ctr+hw/2), axis=1)
 
     def actn_to_bb(self,actn):
-        actn_bbs = K.tf.tanh(actn)
+        actn_bbs = tf.tanh(actn)
         actn_centers = (actn_bbs[:,:2]/2 * self.grid_sizes) + self.anchors[:,:2]
         actn_hw = (actn_bbs[:,2:]/2+1) * self.anchors[:,2:]
         return self.hw2corners(actn_centers, actn_hw)
@@ -176,19 +178,19 @@ class SSD_FOCAL_LOSS:
         return inter[:, :, 0] * inter[:, :, 1]
 
     def jaccard(self,box_a, box_b):
-        box_a = K.cast(box_a,K.tf.float64)
-        box_b = K.cast(box_b,K.tf.float64)
+        box_a = K.cast(box_a,tf.float64)
+        box_b = K.cast(box_b,tf.float64)
         inter = self.intersect(box_a, box_b) 
-        inter = K.cast(inter,K.tf.float64)
-        union = K.cast(K.expand_dims(self.box_sz(box_a),1),K.tf.float64)+ K.cast(K.expand_dims(self.box_sz(box_b),0),K.tf.float64) - inter  
+        inter = K.cast(inter,tf.float64)
+        union = K.cast(K.expand_dims(self.box_sz(box_a),1),tf.float64)+ K.cast(K.expand_dims(self.box_sz(box_b),0),tf.float64) - inter  
 
         return inter/union
 
     def get_y(self,y):
         #y = [class y0 x0 y1 x1]
         diff = y[:,3]-y[:,1]+y[:,4]-y[:,2]
-        idx = K.tf.where(diff>0)
-        return K.tf.gather_nd(y,idx)
+        idx = tf.where(diff>0)
+        return tf.gather_nd(y,idx)
     
     def get_weight(self,pred,target):
         alpha,gamma = 0.9,4
@@ -236,7 +238,7 @@ class SSD_FOCAL_LOSS:
         prior_overlap = K.max(overlaps,1) # [4] for each GT, value of tye best overlapp
 
         # BBOX Loss
-        ADD = K.tf.one_hot(prior_idx,self.nb_activation)
+        ADD = tf.one_hot(prior_idx,self.nb_activation)
         ADD = K.cast(K.sum(ADD,axis=0),('float64'))
 
         gt_overlap = gt_overlap+ADD
@@ -249,7 +251,7 @@ class SSD_FOCAL_LOSS:
 
         loc_loss = K.abs(a_ic-bbox)     
         loc_loss = K.sum(loc_loss,axis=1)   
-        loc_loss = K.tf.multiply(loc_loss,mask)
+        loc_loss = tf.multiply(loc_loss,mask)
         loc_loss = (K.sum(loc_loss))/K.sum(mask)     
                
 	# Classification Loss
@@ -267,7 +269,7 @@ class SSD_FOCAL_LOSS:
                 
         # then, we estimate BCE for mandatory box (GT)
         pred_mandatory_anchor = K.gather(class_Pred,prior_idx)
-        One_Hot_mandatory = K.tf.one_hot(K.cast(class_GT,'int32'),self.nb_class)
+        One_Hot_mandatory = tf.one_hot(K.cast(class_GT,'int32'),self.nb_class)
         
         target=K.concatenate([One_Hot_Overlap,One_Hot_mandatory],axis=0)
         pred=K.concatenate([class_Pred,pred_mandatory_anchor],axis=0)
@@ -281,12 +283,12 @@ class SSD_FOCAL_LOSS:
     def compute_loss(self,y_true,y_pred):
 
         # convert to tensor:
-        y_true_ts = K.tf.to_float(y_true) # [batch, nb_max_gt 20 , 1+4+1]
-        y_pred_ts = K.tf.to_float(y_pred) # [batch, nb_activation 16 , (20 + 4)]   
+        y_true_ts = tf.to_float(y_true) # [batch, nb_max_gt 20 , 1+4+1]
+        y_pred_ts = tf.to_float(y_pred) # [batch, nb_activation 16 , (20 + 4)]   
 
         elements = (y_true_ts, y_pred_ts)
-        loss = K.tf.map_fn(
-                    lambda x:self.SSD_1_LOSS(x[0],x[1]), elements, dtype=K.tf.float32)
+        loss = tf.map_fn(
+                    lambda x:self.SSD_1_LOSS(x[0],x[1]), elements, dtype=tf.float32)
 
 
         return K.sum(loss)
